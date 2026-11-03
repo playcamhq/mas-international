@@ -153,6 +153,31 @@
     }
   }
 
+  /* ---------- Form → readable message (for the WhatsApp hand-off) ---------- */
+  const FORM_TITLES = {
+    "employer-request": "Workforce request",
+    "employer-contact": "Employer enquiry",
+    applicant: "Job application",
+    "applicant-contact": "Applicant question",
+  };
+  const summarise = (form) => {
+    const lines = [];
+    const seen = new Set(["consent", "understand"]);
+    $$("[name]", form).forEach((el) => {
+      if (seen.has(el.name)) return;
+      seen.add(el.name);
+      const vals = $$(`[name="${el.name}"]`, form)
+        .filter((x) => (x.type === "checkbox" || x.type === "radio" ? x.checked : x.value.trim() !== ""))
+        .map((x) => (x.tagName === "SELECT" ? x.options[x.selectedIndex].text : x.value.trim()));
+      if (!vals.length) return;
+      const field = el.closest(".field");
+      const labelEl = field ? $("label, .label", field) : el.closest(".check");
+      const label = (labelEl ? labelEl.textContent : el.name).replace(/\*|\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+      lines.push(`${label}: ${vals.join(", ")}`);
+    });
+    return `${FORM_TITLES[form.dataset.form] || "Website enquiry"} (masconsultants.in)\n\n${lines.join("\n")}`;
+  };
+
   /* ---------- Multi-step forms ---------- */
   $$("form[data-form]").forEach((form) => {
     const steps = $$(".form-step", form);
@@ -236,11 +261,13 @@
           return;
         }
       }
+      // No form service configured: hand the filled-in details to WhatsApp; the visitor taps Send there.
+      const viaWhatsApp = !cfg.formEndpoint && !!cfg.whatsappEnabled;
+      if (viaWhatsApp) window.open(`https://wa.me/${cfg.phoneE164}?text=${encodeURIComponent(summarise(form))}`, "_blank", "noopener");
       form.hidden = true;
       if (success) {
         success.hidden = false;
-        const demo = $(".demo-note", success);
-        if (demo) demo.hidden = !!cfg.formEndpoint;
+        $$("[data-wa-note]", success).forEach((n) => (n.hidden = !viaWhatsApp));
         success.setAttribute("tabindex", "-1");
         success.focus();
       }
