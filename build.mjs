@@ -1,13 +1,15 @@
 // Zero-dependency static build: src/pages/*.html + partials -> site/
 // Each page starts with a <!--meta ... --> block (key: value per line).
 //   node build.mjs          local build -> site/ (served at /)
-//   node build.mjs --pages  GitHub Pages preview -> docs/ (served at /mas-international/, hidden from search)
+//   node build.mjs --pages  GitHub Pages -> docs/ (served at https://masconsultants.in, hidden from search until launch)
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const PAGES = process.argv.includes("--pages");
-const SITE_URL = PAGES ? "https://playcamhq.github.io/mas-international" : "https://www.mas-international.example"; // [OWNER: real domain at launch]
-const BASE = PAGES ? "/mas-international" : "";
+const DOMAIN = "masconsultants.in";
+const SITE_URL = `https://${DOMAIN}`;
+// Path prefix if the site is ever served from a subfolder (e.g. "/mas-international" on github.io without a custom domain)
+const BASE = "";
 const NOINDEX = PAGES; // work-in-progress preview: keep it out of search engines
 const SRC = "src";
 const OUT = PAGES ? "docs" : "site";
@@ -71,5 +73,8 @@ writeFileSync(
   join(OUT, "robots.txt"),
   NOINDEX ? "User-agent: *\nDisallow: /\n" : `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`
 );
-if (PAGES) writeFileSync(join(OUT, ".nojekyll"), "");
+if (PAGES) {
+  writeFileSync(join(OUT, ".nojekyll"), "");
+  writeFileSync(join(OUT, "CNAME"), `${DOMAIN}\n`); // custom domain for GitHub Pages
+}
 console.log(`Built ${urls.length} pages -> ${OUT}/${PAGES ? " (GitHub Pages preview, noindex)" : ""}`);

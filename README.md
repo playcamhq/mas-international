@@ -18,7 +18,8 @@ node build.mjs && python3 -m http.server 4321 -d site
 Then open http://localhost:4321
 
 ## Live preview link (GitHub Pages)
-https://playcamhq.github.io/mas-international/ is rebuilt from `docs/` on every push.
+https://masconsultants.in is served by GitHub Pages (repo playcamhq/mas-international) and rebuilt
+from `docs/` on every push. DNS at GoDaddy: four A records for `@` → 185.199.108–111.153, CNAME `www` → playcamhq.github.io.
 A pre-commit hook runs `node build.mjs --pages` automatically, so publishing an update is just:
 ```bash
 git add -A && git commit -m "Describe the change" && git push
