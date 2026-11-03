@@ -1,0 +1,3 @@
+#!/bin/sh
+# Rebuild the GitHub Pages copy (docs/) on every commit so a push always updates the live link.
+node build.mjs --pages >/dev/null && git add -A docs

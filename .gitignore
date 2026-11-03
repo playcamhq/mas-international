@@ -1,0 +1,6 @@
+# local build output (GitHub Pages serves docs/)
+site/
+.DS_Store
+# internal planning notes — keep local, not in the public repo
+PLAN.md
+LAUNCH-CHECKLIST.md
